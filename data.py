@@ -1,47 +1,39 @@
-import cv2
-
+# Dependencies
 import pandas as pd
-import numpy as np
 
-from os import listdir
-from os.path import join
 from tqdm import tqdm
 
-from constants import LABELS_FILE, IMAGES_PATH, SAVE_FILE, IMAGE_SIZE, IMAGE_CHANNEL
+from constants import LABELS_FILE, IMAGES_PATH, SAVE_PATH, IMAGE_SIZE, IMAGE_CHANNEL, SAVE_CSV
+from utils import make_folder, process_image, get_all_files
 
-# Reading the label file
-data = pd.read_csv(LABELS_FILE)
-labels = data["count"].values
+# Making the folder to save images
+make_folder(SAVE_PATH)
 
-# Getting a list of all images
-images = listdir(IMAGES_PATH)
+# Read the Labels
+label_csv = pd.read_csv(LABELS_FILE)
 
-# Setting the channel
-channel = 1 if IMAGE_CHANNEL == 3 else 0
+labels = label_csv["count"].values
 
-# Array to store all the images
+del label_csv
+
+# Array to store all the data
 dataset = []
 
-# Iterating through the images
+# Read and process all images
+images = get_all_files(IMAGES_PATH)
+
 for index, image in tqdm(enumerate(images)):
-	# Reading the image
-	img = cv2.imread(join(IMAGES_PATH, image), channel)
+	try:
+		saved_path = process_image(IMAGES_PATH, image, SAVE_PATH, (IMAGE_SIZE, IMAGE_SIZE))
+		dataset.append([saved_path, labels[index]])
+	except Exception as ex:
+		pass
 
-	# Resizing the images
-	img = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE))
+del images
 
-	# Appending the images
-	img = np.append(img.flatten(), labels[index])	
+# Saving the data into CSV file
+df = pd.DataFrame(dataset, columns=["image_path", "count"])
 
-	# String the image and labels into main dataset array
-	dataset.append(img)
+df.sample(frac=1)
 
-
-# Cleaning some memory
-del data, labels, images, channel
-
-# Making the final array
-dataset = np.array(dataset)
-
-# Saving in a numpy file
-np.save(SAVE_FILE, dataset)
+df.to_csv(SAVE_CSV, index=False)
