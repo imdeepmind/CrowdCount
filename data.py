@@ -3,7 +3,7 @@ import pandas as pd
 
 from tqdm import tqdm
 
-from constants import LABELS_FILE, IMAGES_PATH, SAVE_PATH, IMAGE_SIZE, IMAGE_CHANNEL, SAVE_CSV
+from constants import LABELS_FILE, IMAGES_PATH, SAVE_PATH, IMAGE_SIZE, SAVE_CSV
 from utils import make_folder, process_image, get_all_files
 
 # Making the folder to save images
@@ -34,6 +34,8 @@ del images
 # Saving the data into CSV file
 df = pd.DataFrame(dataset, columns=["image_path", "count"])
 
+# Shuffling the data
 df.sample(frac=1)
 
+# Saving the data into CSV file
 df.to_csv(SAVE_CSV, index=False)
