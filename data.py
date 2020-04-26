@@ -40,4 +40,8 @@ for index, image in tqdm(enumerate(images)):
 # Cleaning some memory
 del data, labels, images, channel
 
+# Making the final array
+dataset = np.array(dataset)
 
+# Saving in a numpy file
+np.save(SAVE_FILE, dataset)
